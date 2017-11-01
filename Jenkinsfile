@@ -14,7 +14,7 @@ node (''){
     // if the root of the source is the root of the repo, leave this value as ""
     env.SOURCE_CONTEXT_DIR = ""
     // this value is relative to env.SOURCE_CONTEXT_DIR, and should be set to location where mvn will build the uber-jar
-    env.BUILD_FOLDER = "dist/"
+    env.BUILD_FOLDER = "package-contents/"
     env.BUILD_FILE = "Dockerfile"
 
     // this value will be passed to the mvn command - it should include switches like -D and -P
@@ -56,10 +56,11 @@ node('npm-build-pod') {
   dir ("${env.SOURCE_CONTEXT_DIR}") {
     stage('Build App') {
       // TODO - introduce a variable here
-      sh "scl enable rh-nodejs6 \'${NMP_COMMANDS}\'"
+      sh "scl enable rh-nodejs6 \'${NMP_COMMANDS}\'\n
+          mkdir package-contents \n
+          mv dist Dockerfile package-contents"
     }
 
-    // assumes uber jar is created
     stage('Build Image') {
       sh "oc start-build ${env.APP_NAME} --from-dir=${env.BUILD_FOLDER} --follow"
     }
@@ -67,8 +68,6 @@ node('npm-build-pod') {
 
   // no user changes should be needed below this point
   stage ('Deploy to Dev') {
-    input "Promote Application to Dev?"
-
     openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.DEV_PROJECT}", namespace: "${env.OPENSHIFT_BUILD_NAMESPACE}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
 
     openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.DEV_PROJECT}", verifyReplicaCount: true)
