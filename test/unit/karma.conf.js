@@ -5,6 +5,8 @@
 
 var webpackConfig = require('../../build/webpack.test.conf')
 
+const isDocker = require('is-docker')();
+
 module.exports = function (config) {
   config.set({
     // to run in additional browsers:
@@ -12,6 +14,14 @@ module.exports = function (config) {
     //    http://karma-runner.github.io/0.13/config/browsers.html
     // 2. add it to the `browsers` array below.
     browsers: ['ChromeHeadless'],
+    customLaunchers: {
+      ChromeCustom: {
+        base: 'ChromeHeadless',
+        // We must disable the Chrome sandbox when running Chrome inside Docker (Chrome's sandbox needs
+        // more permissions than Docker allows by default)
+        flags: isDocker ? ['--no-sandbox'] : []
+      }
+    },
     frameworks: ['mocha', 'sinon-chai'],
     reporters: ['spec', 'coverage', 'junit'],
     files: ['./index.js'],
