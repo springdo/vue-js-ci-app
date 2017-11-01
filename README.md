@@ -28,3 +28,9 @@ npm test
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
+### TODO
+- Create Jenkins slave using the s2i stuff
+- Create Nexus for hosting the built app code
+- Create Templates to manage deployments
+- Use Jenkins to orchestrate the deployments using Openshift build etc
