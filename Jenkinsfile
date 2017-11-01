@@ -56,7 +56,7 @@ node('npm-build-pod') {
   dir ("${env.SOURCE_CONTEXT_DIR}") {
     stage('Build App') {
       // TODO - introduce a variable here
-      sh '''scl enable rh-nodejs6 \'${NMP_COMMANDS}\' \
+      sh '''scl enable rh-nodejs6 "${NMP_COMMANDS}" \
           mkdir package-contents \
           mv dist Dockerfile package-contents'''
     }
