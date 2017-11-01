@@ -61,7 +61,7 @@ node('npm-build-pod') {
 
     // assumes uber jar is created
     stage('Build Image') {
-      sh "oc start-build ${env.APP_NAME} --from-file=${env.BUILD_FILE} --follow"
+      sh "oc start-build ${env.APP_NAME} --from-dir=${env.BUILD_FOLDER} --follow"
     }
   }
 
