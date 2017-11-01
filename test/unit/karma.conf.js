@@ -5,8 +5,6 @@
 
 var webpackConfig = require('../../build/webpack.test.conf')
 
-const isDocker = require('is-docker')();
-
 module.exports = function (config) {
   config.set({
     // to run in additional browsers:
@@ -19,7 +17,7 @@ module.exports = function (config) {
         base: 'ChromeHeadless',
         // We must disable the Chrome sandbox when running Chrome inside Docker (Chrome's sandbox needs
         // more permissions than Docker allows by default)
-        flags: isDocker ? ['--no-sandbox'] : []
+        flags: ['--no-sandbox']
       }
     },
     frameworks: ['mocha', 'sinon-chai'],
