@@ -15,6 +15,7 @@ node (''){
     env.SOURCE_CONTEXT_DIR = ""
     // this value is relative to env.SOURCE_CONTEXT_DIR, and should be set to location where mvn will build the uber-jar
     env.BUILD_FOLDER = "dist/"
+    env.BUILD_FILE = "Dockerfile"
 
     // this value will be passed to the mvn command - it should include switches like -D and -P
     env.NMP_COMMANDS = "npm install && \
@@ -60,7 +61,7 @@ node('npm-build-pod') {
 
     // assumes uber jar is created
     stage('Build Image') {
-      sh "oc start-build ${env.APP_NAME} --from-dir=${env.BUILD_FOLDER} --follow"
+      sh "oc start-build ${env.APP_NAME} --from-file=${env.BUILD_FOLDER} --follow"
     }
   }
 
