@@ -2,8 +2,6 @@ FROM registry.access.redhat.com/rhscl/nodejs-6-rhel7
 
 WORKDIR /usr/src/app
 
-COPY dist /usr/src/app
-
 ENV FIX_DIR /usr/src/app
 
 USER root
@@ -15,5 +13,7 @@ RUN chown -R "1001" "${FIX_DIR}" && \
 USER 1001
 
 RUN scl enable rh-nodejs6 'npm install http-server'
+
+COPY dist /usr/src/app
 
 CMD ["./node_modules/.bin/http-server"]
