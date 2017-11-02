@@ -1,5 +1,19 @@
-FROM registry.access.redhat.com/rhscl/nginx-112-rhel7
+FROM registry.access.redhat.com/rhscl/nodejs-6-rhel7
 
-COPY dist /usr/share/nginx/html
+WORKDIR /usr/src/app
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY dist /usr/src/app
+
+ENV FIX_DIR /usr/src/app
+
+USER root
+RUN chown -R "1001" "${FIX_DIR}" && \
+    chgrp -R 0 "${FIX_DIR}" && \
+    chmod -R g+rw "${FIX_DIR}" && \
+    find "${FIX_DIR}" -type d -exec chmod g+x {} +
+
+USER 1001
+
+RUN scl enable rh-nodejs6 'npm install http-server'
+
+CMD ["./node_modules/.bin/http-server"]
