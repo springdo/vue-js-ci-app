@@ -31,10 +31,11 @@ module.exports = function (config) {
       noInfo: true
     },
     coverageReporter: {
-      dir: './coverage',
+      dir: '../../reports/coverage',
       reporters: [
         { type: 'lcov', subdir: '.' },
-        { type: 'text-summary' }
+        { type: 'text-summary' },
+        { type: 'cobertura', subdir: '.', file: 'cobertura.xml' }
       ]
     },
     // the default configuration
