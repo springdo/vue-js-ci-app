@@ -28,20 +28,26 @@ jobDeloyList.each {
           daysToKeep(100)
           artifactNumToKeep(2)
         }
+        wrappers {
+          ansiColorBuildWrapper {
+            colorMapName('xterm')
+          }
+        }
         steps {
           steps {
             shell('#!/bin/bash' + newLine +
+                  'set -o xtrace' + newLine +
                   'PIPELINES_NAMESPACE=' + pipelineNamespace  + newLine +
                   'NAMESPACE=' + projectNamespace  + newLine +
                   'NAME=' + appName  + newLine +
-                  'oc tag ${PIPELINES_NAMESPACE}/${NAME}:latest ${NAMESPACE}/${NAME}:${BUILD_TAG}' + newLine +
+                  'oc tag ${PIPELINES_NAMESPACE}/${NAME}:${BUILD_TAG} ${NAMESPACE}/${NAME}:${BUILD_TAG}' + newLine +
                   'oc project ${NAMESPACE}' + newLine +
                   'oc patch dc ${NAME} -p "spec:' + newLine +
                   '  template:' + newLine +
                   '    spec:' + newLine +
                   '      containers:' + newLine +
                   '        - name: ${NAME}' + newLine +
-                  '          image: docker-registry.default.svc/${NAMESPACE}/${NAME}:${BUILD_TAG}"' + newLine +
+                  '          image: \'docker-registry.default.svc:5000/${NAMESPACE}/${NAME}:${BUILD_TAG}\'"' + newLine +
                   'oc rollout latest dc/${NAME}')
           }
           openShiftDeploymentVerifier {
@@ -72,14 +78,47 @@ jobDeloyList.each {
 
     job(jobNameTests) {
         description(jobDescription)
+        label('npm-build-pod')
         logRotator {
           daysToKeep(100)
           artifactNumToKeep(2)
         }
+        wrappers {
+          ansiColorBuildWrapper {
+            colorMapName('xterm')
+          }
+        }
+        scm {
+          git {
+            remote {
+              name('origin')
+              url(gitUrl)
+              branch('')
+            }
+          }
+        }
         steps {
           steps {
             shell('#!/bin/bash' + newLine +
-                  'echo run e2e tests')
+                  'set -o xtrace' + newLine +
+                  'echo run e2e tests' + newLine +
+                  'scl enable rh-nodejs6 \'npm install\'' + newLine +
+                  'scl enable rh-nodejs6 \'npm run e2e\'')
+          }
+        }
+        publishers {
+          xUnitPublisher {
+            tools {
+              jUnitType {
+                pattern('reports/e2e/*.xml')
+                skipNoTestFiles(false)
+                failIfNotNew(true)
+                deleteOutputFiles(true)
+                stopProcessingIfError(true)
+              }
+            }
+            thresholdMode(0)
+            testTimeMargin('3000')
           }
         }
     }
@@ -98,6 +137,11 @@ jobBuildList.each {
       logRotator {
         daysToKeep(100)
         artifactNumToKeep(2)
+      }
+      wrappers {
+        ansiColorBuildWrapper {
+          colorMapName('xterm')
+        }
       }
     	scm {
         git {
@@ -122,17 +166,20 @@ jobBuildList.each {
       steps {
         steps {
           shell('#!/bin/bash' + newLine +
-                'scl enable rh-nodejs6 \'npm install && \
-                	npm run unit && \
-                	npm run build\'' + newLine +
+                'NAME=' + appName  + newLine +
+                'set -o xtrace' + newLine +
+                'scl enable rh-nodejs6 \'npm install\'' + newLine +
+                'scl enable rh-nodejs6 \'npm run unit\'' + newLine +
+                'scl enable rh-nodejs6 \'npm run build\'' + newLine +
                 'mkdir package-contents' + newLine +
                 'mv dist Dockerfile package-contents' + newLine +
-                'oc patch bc vue-app -p "spec:' + newLine +
+                'oc patch bc ${NAME} -p "spec:' + newLine +
                 '   nodeSelector:' + newLine +
-                '     output:' + newLine +
-                '       to:' + newLine +
-                '       name: vue-app:${JOB_NAME}.${BUILD_NUMBER}"' + newLine +
-                'oc start-build vue-app --from-dir=package-contents/ --follow')
+                '   output:' + newLine +
+                '     to:' + newLine +
+                '       kind: ImageStreamTag' + newLine +
+                '       name: \'${NAME}:${JOB_NAME}.${BUILD_NUMBER}\'"' + newLine +
+                'oc start-build ${NAME} --from-dir=package-contents/ --follow')
         }
       }
       publishers {
