@@ -24,6 +24,10 @@ jobDeloyList.each {
             description("The BUILD_TAG is the \${JOB_NAME}.\${BUILD_NUMBER} of the successful build to be promoted. For example ${buildTag}")
           }
         }
+        logRotator {
+          daysToKeep(100)
+          artifactNumToKeep(2)
+        }
         steps {
           steps {
             shell('#!/bin/bash' + newLine +
@@ -68,6 +72,10 @@ jobDeloyList.each {
 
     job(jobNameTests) {
         description(jobDescription)
+        logRotator {
+          daysToKeep(100)
+          artifactNumToKeep(2)
+        }
         steps {
           steps {
             shell('#!/bin/bash' + newLine +
@@ -87,6 +95,10 @@ jobBuildList.each {
   job(jobName) {
       description(jobDescription)
   	  label('npm-build-pod')
+      logRotator {
+        daysToKeep(100)
+        artifactNumToKeep(2)
+      }
     	scm {
         git {
           remote {
@@ -100,7 +112,7 @@ jobBuildList.each {
             branch('master')
           }
           else {
-            branch('origin/feature/*')
+            branch('*/feature/**')
           }
         }
       }
