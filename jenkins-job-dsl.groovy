@@ -100,7 +100,7 @@ jobBuildList.each {
             branch('master')
           }
           else {
-            branch('origin/feature/*')
+            branch('origin/feature/**')
           }
         }
       }
